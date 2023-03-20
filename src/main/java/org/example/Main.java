@@ -1,23 +1,13 @@
 package org.example;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import io.grpc.ManagedChannel;
-import org.example.Connection.Connection;
-import org.example.Services.TransactionService;
-import org.hyperledger.fabric.client.Contract;
-import org.hyperledger.fabric.client.Gateway;
+import org.example.Entities.Credential;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 public class Main {
-
     private Properties properties;
 
     public static void main(String[] args) {
@@ -29,51 +19,67 @@ public class Main {
     }
 
     public void run() throws Exception {
+
+//        boolean reset = true;
+//        if (reset) {
+//            FileUtils.deleteDirectory(new File("wallet"));
+//            return;
+//        }
+
         if (!loadConfig()) {
             return;
         }
 
-        final String mspId = properties.getProperty("MSP_ID");
         final String channelName = properties.getProperty("CHANNEL_NAME");
         final String chaincodeName = properties.getProperty("CHAINCODE_NAME");
-//        final Path cryptoPath = Paths.get(properties.getProperty("CRYPTO_PATH"));
-        final Path certificatePath = Paths.get(properties.getProperty("CERT_PATH"));
-        final Path keyDirectoryPath = Paths.get(properties.getProperty("KEY_DIR_PATH"));
-        final Path tlsCertificatePath = Paths.get(properties.getProperty("TLS_CERT_PATH"));
-        final String peerEndpoint = properties.getProperty("PEER_ENDPOINT");
-        final String overrideAuth = properties.getProperty("OVERRIDE_AUTH");
+        final String networkConfigPath = properties.getProperty("NETWORK_CONFIG_PATH");
 
-        Contract contract;
-//        final String credentialId = "credential" + Instant.now().toEpochMilli();
-//        final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        final String mspID = properties.getProperty("MSP_ID");
+        final String walletPath = properties.getProperty("WALLET_PATH");
+        final String pemPath = properties.getProperty("PEM_PATH");
+        final String hfcaClientEndpoint = properties.getProperty("HFCA_CLIENT_ENDPOINT");
+        final String affiliation = properties.getProperty("AFFILIATION");
 
-        Connection connection = new Connection(
-                mspId,
-                tlsCertificatePath,
-                peerEndpoint,
-                certificatePath,
-                keyDirectoryPath,
-                overrideAuth
+
+        System.out.println("walletPath " + walletPath +
+                "\npemPath " + pemPath +
+                "\nhfcaClientEndpoint " + hfcaClientEndpoint +
+                "\nmspID " + mspID +
+                "\naffiliation " + affiliation +
+                "\nchaincodeName " + chaincodeName +
+                "\nnetworkConfigPath " + networkConfigPath +
+                "\nchannelName " + channelName);
+
+        CredentialStoreConnect credentialStoreConnect = new CredentialStoreConnect(
+                walletPath,
+                pemPath,
+                hfcaClientEndpoint,
+                mspID,
+                affiliation,
+                chaincodeName,
+                networkConfigPath,
+                channelName
         );
 
-        ManagedChannel managedChannel = connection.newGrpcConnection();
-
-        Gateway.Builder builder = Gateway.newInstance().identity(connection.newIdentity()).signer(connection.newSigner()).connection(managedChannel)
-                .evaluateOptions(options -> options.withDeadlineAfter(5, TimeUnit.SECONDS))
-                .endorseOptions(options -> options.withDeadlineAfter(15, TimeUnit.SECONDS))
-                .submitOptions(options -> options.withDeadlineAfter(5, TimeUnit.SECONDS))
-                .commitStatusOptions(options -> options.withDeadlineAfter(1, TimeUnit.MINUTES));
-
-        try (Gateway gateway = builder.connect()) {
-            contract = gateway.getNetwork(channelName).getContract(chaincodeName);
-            TransactionService transactionService = new TransactionService(contract);
-
-            // Execute transactions
-        } finally {
-            managedChannel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
+        String credentialID = "credential103";
+        credentialStoreConnect.createUser("newUser32");
+//        credentialStoreConnect.initializeLedger();
+        boolean credentialExists = credentialStoreConnect.credentialExists(credentialID);
+        System.out.println("credentialExists" + credentialExists);
+        Credential createCredential =  credentialStoreConnect.createCredential(credentialID, "credential-name", "value101");
+        System.out.println("createCredential" + createCredential.toString());
+        Credential readCredential = credentialStoreConnect.readCredential(credentialID);
+        System.out.println("readCredential" + readCredential.toString());
+        Credential updateCredential = credentialStoreConnect.updateCredential(credentialID, "credential-name","value101 new value");
+        System.out.println("updateCredential" + updateCredential.toString());
+        Credential readCredential2 = credentialStoreConnect.readCredential(credentialID);
+        System.out.println("readCredential2" + readCredential2.toString());
+        credentialStoreConnect.deleteCredential(credentialID);
+        ArrayList<Credential> credentials = credentialStoreConnect.getAllCredentials();
+        for(Credential c: credentials){
+            System.out.println("credentials n: " + c.toString());
         }
     }
-
 
     public boolean loadConfig() {
         Properties properties = new Properties();
