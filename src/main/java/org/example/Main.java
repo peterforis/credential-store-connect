@@ -62,20 +62,21 @@ public class Main {
         );
 
         String credentialID = "credential103";
-        credentialStoreConnect.createUser("newUser32");
+        String userName = "newUser32";
+        credentialStoreConnect.createUser(userName);
 //        credentialStoreConnect.initializeLedger();
-        boolean credentialExists = credentialStoreConnect.credentialExists(credentialID);
+        boolean credentialExists = credentialStoreConnect.credentialExists(userName, credentialID);
         System.out.println("credentialExists" + credentialExists);
-        Credential createCredential =  credentialStoreConnect.createCredential(credentialID, "credential-name", "value101");
+        Credential createCredential =  credentialStoreConnect.createCredential(userName, "credential-name", "value101");
         System.out.println("createCredential" + createCredential.toString());
-        Credential readCredential = credentialStoreConnect.readCredential(credentialID);
+        Credential readCredential = credentialStoreConnect.readCredential(userName, credentialID);
         System.out.println("readCredential" + readCredential.toString());
-        Credential updateCredential = credentialStoreConnect.updateCredential(credentialID, "credential-name","value101 new value");
+        Credential updateCredential = credentialStoreConnect.updateCredential(userName, credentialID, "credential-name","value101 new value");
         System.out.println("updateCredential" + updateCredential.toString());
-        Credential readCredential2 = credentialStoreConnect.readCredential(credentialID);
+        Credential readCredential2 = credentialStoreConnect.readCredential(userName, credentialID);
         System.out.println("readCredential2" + readCredential2.toString());
-        credentialStoreConnect.deleteCredential(credentialID);
-        ArrayList<Credential> credentials = credentialStoreConnect.getAllCredentials();
+        credentialStoreConnect.deleteCredential(userName, credentialID);
+        ArrayList<Credential> credentials = credentialStoreConnect.getAllCredentials(userName);
         for(Credential c: credentials){
             System.out.println("credentials n: " + c.toString());
         }
