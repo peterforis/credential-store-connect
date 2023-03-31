@@ -26,9 +26,9 @@ public class TransactionService {
         this.chaincodeName = chaincodeName;
     }
 
-    public Contract getContract(String userName) throws Exception {
+    public Contract getContract(String username) throws Exception {
         return Gateway.createBuilder()
-                .identity(this.wallet, userName)
+                .identity(this.wallet, username)
                 .networkConfig(Paths.get(this.networkConfigPath))
                 .discovery(true)
                 .connect()
@@ -36,57 +36,41 @@ public class TransactionService {
                 .getContract(this.chaincodeName);
     }
 
-    public void initLedger(String userName) throws Exception {
-        System.out.println("[===> SubmitTransaction: InitLedger]");
-        getContract(userName).submitTransaction("InitLedger");
-    }
-
-    public boolean credentialExists(String userName, String credentialID) throws Exception {
-        System.out.println("[===> EvaluateTransaction: CredentialExists " + credentialID + "]");
-        String result = new String(getContract(userName).evaluateTransaction("CredentialExists", credentialID));
-        System.out.println("[result: " + result + "]\n");
+    public boolean credentialExists(String username, String credentialID) throws Exception {
+        String result = new String(getContract(username).evaluateTransaction("CredentialExists", credentialID));
 
         return result.equals("true");
     }
 
-    public Credential createCredential(String userName, String credentialName, String credentialValue) throws Exception {
+    public Credential createCredential(String username, String credentialName, String credentialValue) throws Exception {
         String credentialID;
         do {
             credentialID = UUID.randomUUID().toString();
-        } while (credentialExists(userName, credentialID));
+        } while (credentialExists(username, credentialID));
 
-        System.out.println("[===> SubmitTransaction: CreateCredential " + credentialID + " with name " + credentialName + " with value " + credentialValue + "]");
-        String result = new String(getContract(userName).submitTransaction("CreateCredential", credentialID, credentialName, userName, credentialValue));
-        System.out.println("[result: " + result + "]\n");
+        String result = new String(getContract(username).submitTransaction("CreateCredential", credentialID, credentialName, username, credentialValue));
 
         return this.jsonParser.parseCredential(result);
     }
 
-    public Credential readCredential(String userName, String credentialID) throws Exception {
-        System.out.println("[===> EvaluateTransaction: ReadCredential " + credentialID + "]");
-        String result = new String(getContract(userName).evaluateTransaction("ReadCredential", credentialID));
-        System.out.println("[result: " + result + "]\n");
+    public Credential readCredential(String username, String credentialID) throws Exception {
+        String result = new String(getContract(username).evaluateTransaction("ReadCredential", credentialID));
 
         return this.jsonParser.parseCredential(result);
     }
 
-    public Credential updateCredential(String userName, String credentialID, String credentialName, String newCredentialValue) throws Exception {
-        System.out.println("[===> SubmitTransaction: UpdateCredential " + credentialID + " with name " + credentialName + " new CredentialValue: " + newCredentialValue + "]");
-        String result = new String(getContract(userName).submitTransaction("UpdateCredential", credentialID, credentialName, userName, newCredentialValue));
-        System.out.println("[result: " + result + "]\n");
+    public Credential updateCredential(String username, String credentialID, String credentialName, String newCredentialValue) throws Exception {
+        String result = new String(getContract(username).submitTransaction("UpdateCredential", credentialID, credentialName, username, newCredentialValue));
 
         return this.jsonParser.parseCredential(result);
     }
 
-    public void deleteCredential(String userName, String credentialID) throws Exception {
-        System.out.println("[===> SubmitTransaction: DeleteCredential " + credentialID + "]\n");
-        getContract(userName).submitTransaction("DeleteCredential", credentialID);
+    public void deleteCredential(String username, String credentialID) throws Exception {
+        getContract(username).submitTransaction("DeleteCredential", credentialID);
     }
 
-    public ArrayList<Credential> getAllCredentials(String userName) throws Exception {
-        System.out.println("[===> EvaluateTransaction: GetAllCredentials]");
-        String result = new String(getContract(userName).evaluateTransaction("GetAllCredentials"));
-        System.out.println("Evaluate Transaction: GetAllCredentials, result:\n" + result + "]\n");
+    public ArrayList<Credential> getAllCredentials(String username) throws Exception {
+        String result = new String(getContract(username).evaluateTransaction("GetAllCredentials"));
 
         return this.jsonParser.parseCredentialArray(result);
     }

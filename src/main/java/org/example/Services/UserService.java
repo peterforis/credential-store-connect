@@ -14,17 +14,11 @@ import org.hyperledger.fabric_ca.sdk.HFCAIdentity;
 import org.hyperledger.fabric_ca.sdk.RegistrationRequest;
 
 import java.security.PrivateKey;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 public class UserService {
-
     private final HFCAClient hfcaClient;
-
     private final Wallet wallet;
-
     private final String mspID;
     private final String affiliation;
 
@@ -48,7 +42,6 @@ public class UserService {
 
     public void enrollAdmin() throws Exception {
         if (this.wallet.get("admin") != null) {
-            System.out.println("An identity for the admin user \"admin\" already exists in the wallet");
             return;
         }
 
@@ -58,7 +51,6 @@ public class UserService {
         Enrollment enrollment = this.hfcaClient.enroll("admin", "adminpw", enrollmentRequestTLS);
         Identity user = Identities.newX509Identity("Org1MSP", enrollment);
         this.wallet.put("admin", user);
-        System.out.println("Successfully enrolled user \"admin\" and imported it into the wallet");
     }
 
     public User getAdmin() throws Exception {
@@ -116,12 +108,13 @@ public class UserService {
         this.hfcaClient.revoke(admin, userID, "Revoked by admin");
     }
 
-    public User getUser(String userName) throws Exception {
+    public Optional<User> getUser(String userName) throws Exception {
         X509Identity userIdentity = (X509Identity) this.wallet.get(userName);
         if (userIdentity != null) {
-            return createUserWithParams(userName, userIdentity);
+            return Optional.of(createUserWithParams(userName, userIdentity));
         }
-        return null;
+
+        return Optional.empty();
     }
 
     public User enrollUser(String userName) throws Exception {
@@ -144,7 +137,6 @@ public class UserService {
         X509Identity userIdentity = Identities.newX509Identity(this.mspID, enrollment);
 
         this.wallet.put(userName, userIdentity);
-        System.out.println("Successfully enrolled user " + userName + " and imported it into the wallet");
 
         return createUserWithParams(userName, userIdentity);
     }
@@ -199,7 +191,6 @@ public class UserService {
         Collection<HFCAIdentity> hfcaIdentities = this.hfcaClient.getHFCAIdentities(admin);
         for (HFCAIdentity hfcaIdentity : hfcaIdentities) {
             hfcaIdentitiesString.add(hfcaIdentity.getEnrollmentId());
-            System.out.println("IDENTITY FOUND: " + hfcaIdentity.getEnrollmentId());
         }
         return hfcaIdentitiesString;
     }

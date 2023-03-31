@@ -9,6 +9,7 @@ import org.hyperledger.fabric.sdk.User;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Optional;
 
 public class CredentialStoreConnect {
 
@@ -40,50 +41,38 @@ public class CredentialStoreConnect {
     }
 
     // Transaction related methods
-    private void validate() throws Exception {
-        if (this.transactionService == null) {
-            throw new Exception("TransactionService is not initialized");
-        }
+
+    public boolean credentialExists(String username, String credentialID) throws Exception {
+        return this.transactionService.credentialExists(username, credentialID);
     }
 
-    public void initializeLedger(String userName) throws Exception {
-        validate();
-        this.transactionService.initLedger(userName);
+    public Credential createCredential(String username, String credentialName, String credentialValue) throws Exception {
+        return this.transactionService.createCredential(username, credentialName, credentialValue);
     }
 
-    public boolean credentialExists(String userName, String credentialID) throws Exception {
-        validate();
-        return this.transactionService.credentialExists(userName, credentialID);
+    public Credential readCredential(String username, String credentialID) throws Exception {
+        return this.transactionService.readCredential(username, credentialID);
     }
 
-    public Credential createCredential(String userName, String credentialName, String credentialValue) throws Exception {
-        validate();
-        return this.transactionService.createCredential(userName, credentialName, credentialValue);
+    public Credential updateCredential(String username, String credentialID, String credentialName, String newCredentialValue) throws Exception {
+        return this.transactionService.updateCredential(username, credentialID, credentialName, newCredentialValue);
     }
 
-    public Credential readCredential(String userName, String credentialID) throws Exception {
-        validate();
-        return this.transactionService.readCredential(userName, credentialID);
+    public void deleteCredential(String username, String credentialID) throws Exception {
+        this.transactionService.deleteCredential(username, credentialID);
     }
 
-    public Credential updateCredential(String userName, String credentialID, String credentialName, String newCredentialValue) throws Exception {
-        validate();
-        return this.transactionService.updateCredential(userName, credentialID, credentialName, newCredentialValue);
-    }
-
-    public void deleteCredential(String userName, String credentialID) throws Exception {
-        validate();
-        this.transactionService.deleteCredential(userName, credentialID);
-    }
-
-    public ArrayList<Credential> getAllCredentials(String userName) throws Exception {
-        validate();
-        return this.transactionService.getAllCredentials(userName);
+    public ArrayList<Credential> getAllCredentials(String username) throws Exception {
+        return this.transactionService.getAllCredentials(username);
     }
 
     // User related methods
-    public User createUser(String userName) throws Exception {
-        return this.userService.enrollUser(userName);
+    public User getUserWithUsername(String username) throws Exception {
+        Optional<User> optionalUser = this.userService.getUser(username);
+        if (optionalUser.isEmpty()) {
+            return this.userService.enrollUser(username);
+        }
+        return optionalUser.get();
     }
 
     public void deleteUser(String userID) throws Exception {
