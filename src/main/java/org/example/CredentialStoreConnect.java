@@ -41,7 +41,6 @@ public class CredentialStoreConnect {
     }
 
     // Transaction related methods
-
     public boolean credentialExists(String username, String credentialID) throws Exception {
         return this.transactionService.credentialExists(username, credentialID);
     }
@@ -54,8 +53,8 @@ public class CredentialStoreConnect {
         return this.transactionService.readCredential(username, credentialID);
     }
 
-    public Credential updateCredential(String username, String credentialID, String credentialName, String newCredentialValue) throws Exception {
-        return this.transactionService.updateCredential(username, credentialID, credentialName, newCredentialValue);
+    public Credential updateCredential(String username, String credentialID, String newCredentialName, String newCredentialValue) throws Exception {
+        return this.transactionService.updateCredential(username, credentialID, newCredentialName, newCredentialValue);
     }
 
     public void deleteCredential(String username, String credentialID) throws Exception {
@@ -67,12 +66,11 @@ public class CredentialStoreConnect {
     }
 
     // User related methods
-    public User getUserWithUsername(String username) throws Exception {
+    public void getUserWithUsername(String username) throws Exception {
         Optional<User> optionalUser = this.userService.getUser(username);
         if (optionalUser.isEmpty()) {
-            return this.userService.enrollUser(username);
+            this.userService.enrollUser(username);
         }
-        return optionalUser.get();
     }
 
     public void deleteUser(String userID) throws Exception {

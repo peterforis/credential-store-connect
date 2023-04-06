@@ -22,4 +22,20 @@ public class Credential {
                 ", credentialValue='" + credentialValue + '\'' +
                 '}';
     }
+
+    public String getCredentialID() {
+        return credentialID;
+    }
+
+    public String getCredentialName() {
+        return credentialName;
+    }
+
+    public String getCredentialOwner() {
+        return credentialOwner;
+    }
+
+    public String getCredentialValue() {
+        return credentialValue;
+    }
 }
